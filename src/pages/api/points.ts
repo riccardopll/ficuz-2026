@@ -4,20 +4,22 @@ import { eq } from "drizzle-orm";
 import { createDb } from "../../db";
 import { players, pointTransactions } from "../../db/schema";
 import { getSafeRedirectPath, hasValidAdminSession, redirect } from "../../lib/admin-auth";
+import { isPointChange } from "../../lib/points";
 
 export const POST: APIRoute = async ({ request, locals, cookies }) => {
-  const formData = await request.formData();
-  const next = getSafeRedirectPath(String(formData.get("next") ?? "/"));
+  const form = await request.formData();
+  const next = getSafeRedirectPath(String(form.get("next") ?? "/"));
+  const back = new URL(next, request.url);
 
   if (!hasValidAdminSession(cookies, locals.runtime.env)) {
-    return redirect(new URL(next, request.url));
+    return redirect(back);
   }
 
-  const playerId = Number(formData.get("playerId"));
-  const delta = Number(formData.get("delta"));
+  const playerId = Number(form.get("playerId"));
+  const points = Number(form.get("points"));
 
-  if (!Number.isInteger(playerId) || (delta !== 1 && delta !== -1)) {
-    return redirect(new URL(next, request.url));
+  if (!Number.isInteger(playerId) || !isPointChange(points)) {
+    return redirect(back);
   }
 
   const db = createDb(locals.runtime.env.DB);
@@ -28,14 +30,14 @@ export const POST: APIRoute = async ({ request, locals, cookies }) => {
     .limit(1);
 
   if (!player) {
-    return redirect(new URL(next, request.url));
+    return redirect(back);
   }
 
   await db.insert(pointTransactions).values({
     playerId,
-    points: delta,
-    reason: delta > 0 ? "manual_increment" : "manual_decrement",
+    points,
+    reason: points > 0 ? "manual_increment" : "manual_decrement",
   });
 
-  return redirect(new URL(next, request.url));
+  return redirect(back);
 };

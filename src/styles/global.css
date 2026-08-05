@@ -1,1 +1,36 @@
 @import "tailwindcss";
+
+@theme inline {
+  --color-page: var(--color-gray-100);
+  --color-panel: var(--color-white);
+  --color-panel-muted: var(--color-gray-50);
+  --color-ink: var(--color-gray-800);
+  --color-body: var(--color-gray-700);
+  --color-subtle: var(--color-gray-500);
+  --color-muted: var(--color-gray-600);
+  --color-line: var(--color-gray-200);
+  --color-action: var(--color-gray-900);
+  --color-action-hover: var(--color-gray-700);
+  --color-penalty: var(--color-red-700);
+  --color-penalty-bright: var(--color-red-500);
+  --color-penalty-soft: var(--color-red-50);
+  --color-penalty-hover: var(--color-red-100);
+  --color-penalty-border: var(--color-red-300);
+  --color-relief: var(--color-emerald-700);
+  --color-relief-bright: var(--color-emerald-500);
+  --color-relief-soft: var(--color-emerald-50);
+  --color-relief-hover: var(--color-emerald-100);
+  --color-relief-border: var(--color-emerald-300);
+  --radius-panel: var(--radius-lg);
+  --radius-control: var(--radius-xl);
+  --radius-dialog: var(--radius-2xl);
+}
+
+:where(a, button, input):focus-visible {
+  outline: 2px solid var(--color-action);
+  outline-offset: 2px;
+}
+
+dialog[data-admin-dialog]::backdrop {
+  background: rgb(0 0 0 / 30%);
+}

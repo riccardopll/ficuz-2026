@@ -8,10 +8,11 @@ import {
 } from "../../lib/admin-auth";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-  const formData = await request.formData();
-  const next = getSafeRedirectPath(String(formData.get("next") ?? "/"));
+  const form = await request.formData();
+  const next = getSafeRedirectPath(String(form.get("next") ?? "/"));
+  const back = new URL(next, request.url);
 
   cookies.delete(ADMIN_COOKIE_NAME, getAdminCookieOptions(request));
 
-  return redirect(new URL(next, request.url));
+  return redirect(back);
 };

@@ -1,0 +1,97 @@
+---
+import { translations as t } from "../i18n/translations";
+
+interface Props {
+  closePath: string;
+  showError: boolean;
+}
+
+const { closePath, showError } = Astro.props;
+---
+
+<dialog
+  class="fixed inset-0 m-auto max-h-[calc(100dvh_-_2rem)] w-[calc(100%_-_2rem)] max-w-sm overflow-y-auto rounded-dialog bg-panel p-5 text-body shadow-xl"
+  aria-labelledby="admin-dialog-title"
+  data-admin-dialog
+  data-close-path={closePath}
+>
+  <button
+    type="button"
+    class="absolute right-3 top-3 flex size-11 items-center justify-center rounded-full text-2xl leading-none text-subtle transition hover:bg-panel-muted hover:text-ink"
+    aria-label={t.close}
+    data-dialog-close
+  >
+    ×
+  </button>
+
+  <h2 id="admin-dialog-title" class="px-8 text-center text-xl font-bold text-ink">
+    {t.adminPasswordTitle}
+  </h2>
+
+  {
+    showError && (
+      <p
+        id="admin-password-error"
+        class="mt-4 rounded-panel bg-penalty-soft px-4 py-3 text-sm text-penalty"
+        role="alert"
+      >
+        {t.adminPasswordInvalid}
+      </p>
+    )
+  }
+
+  <form method="post" action="/admin/login" class="mt-4">
+    <input type="hidden" name="next" value={closePath} />
+    <label for="admin-password" class="sr-only">
+      {t.adminPasswordLabel}
+    </label>
+    <div class="flex items-stretch gap-3">
+      <input
+        id="admin-password"
+        name="password"
+        type="password"
+        required
+        autofocus
+        aria-invalid={showError ? "true" : undefined}
+        aria-describedby={showError ? "admin-password-error" : undefined}
+        class="min-w-0 flex-1 rounded-control border border-line px-4 py-3 text-ink shadow-sm transition focus:border-muted focus:ring-2 focus:ring-line"
+        placeholder={t.adminPasswordPlaceholder}
+      />
+      <button
+        type="submit"
+        class="flex size-13 shrink-0 items-center justify-center rounded-control bg-action text-2xl leading-none text-white transition hover:bg-action-hover"
+        aria-label={t.adminPasswordSubmit}
+        title={t.adminPasswordSubmit}
+      >
+        →
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>("[data-admin-dialog]");
+
+  if (dialog) {
+    const close = () => location.assign(dialog.dataset.closePath ?? "/");
+
+    dialog.querySelector("[data-dialog-close]")?.addEventListener("click", close);
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      close();
+    });
+    dialog.addEventListener("click", (event) => {
+      if (event.target !== dialog) return;
+
+      const box = dialog.getBoundingClientRect();
+      const isBackdrop =
+        event.clientX < box.left ||
+        event.clientX > box.right ||
+        event.clientY < box.top ||
+        event.clientY > box.bottom;
+
+      if (isBackdrop) close();
+    });
+    dialog.showModal();
+  }
+</script>

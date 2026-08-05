@@ -1,0 +1,33 @@
+---
+import { translations as t } from "../i18n/translations";
+
+const points = new Intl.NumberFormat("it", { maximumFractionDigits: 1 });
+---
+
+<section class="mt-8 rounded-panel bg-panel p-6" aria-labelledby="rules-title">
+  <h2 id="rules-title" class="mb-4 text-xl font-bold text-ink">{t.rulesTitle}</h2>
+  <div class="space-y-3">
+    {
+      t.rules.map((rule) => (
+        <article class="flex items-start gap-3 rounded-panel bg-panel-muted p-3">
+          <strong class="flex h-8 w-16 shrink-0 items-center justify-center rounded bg-penalty text-sm text-white">
+            +{points.format(rule.points)} PF
+          </strong>
+          <div class="min-w-0 flex-1">
+            <p class="text-body">{rule.description}</p>
+            {rule.notes && (
+              <ul class="mt-2 space-y-1 text-sm text-subtle">
+                {rule.notes.map((note) => (
+                  <li class="flex gap-1">
+                    <span aria-hidden="true">*</span>
+                    <span>{note}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</section>

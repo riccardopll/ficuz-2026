@@ -1,299 +1,139 @@
 ---
+import AdminDialog from "./AdminDialog.astro";
+import PeriodTabs from "./PeriodTabs.astro";
+import Rules from "./Rules.astro";
 import Layout from "../layouts/Layout.astro";
 import { createDb } from "../db";
 import { getSafeRedirectPath, hasValidAdminSession } from "../lib/admin-auth";
 import { getLeaderboardState, getPeriods } from "../lib/leaderboard";
-import { translations } from "../i18n/translations";
+import { POINT_CHANGES } from "../lib/points";
+import { translations as t } from "../i18n/translations";
 
-const t = translations;
 const db = createDb(Astro.locals.runtime.env.DB);
-const state = await getLeaderboardState(
-  db,
-  Astro.url.searchParams.get("period"),
-);
+const state = await getLeaderboardState(db, Astro.url.searchParams.get("period"));
 const isAdmin = hasValidAdminSession(Astro.cookies, Astro.locals.runtime.env);
 const periods = getPeriods(t.months);
-const canAdjustPoints = isAdmin && periods.at(-1)?.value === state.period;
+const canEdit = isAdmin && periods.at(-1)?.value === state.period;
 const pageUrl = new URL(Astro.url);
 pageUrl.searchParams.delete("admin");
 pageUrl.searchParams.delete("error");
 const currentPath = getSafeRedirectPath(`${pageUrl.pathname}${pageUrl.search}`);
 const adminHref = `${currentPath}${currentPath.includes("?") ? "&" : "?"}admin=1`;
-const showAdminModal = Astro.url.searchParams.get("admin") === "1";
-const showInvalidPassword = Astro.url.searchParams.get("error") === "invalid";
+const showDialog = Astro.url.searchParams.get("admin") === "1" && !isAdmin;
+const showError = Astro.url.searchParams.get("error") === "invalid";
 
-const numberFormatter = new Intl.NumberFormat("it", {
-  maximumFractionDigits: 2,
-});
+const points = new Intl.NumberFormat("it", { maximumFractionDigits: 2 });
 
-function formatPoints(value: number) {
-  return numberFormatter.format(value);
-}
-
-function formatMonthlyDelta(value: number) {
-  const sign = value > 0 ? "+" : "";
-  return `(${sign}${numberFormatter.format(value)})`;
+function formatChange(value: number) {
+  return `${value > 0 ? "+" : ""}${points.format(value)}`;
 }
 ---
 
 <Layout title={t.title}>
-  <div class="container mx-auto px-4 py-8">
+  <main class="container mx-auto px-4 py-8">
     <div class="mx-auto max-w-2xl">
-      <div class="text-center">
-        <h1 class="text-3xl font-bold text-gray-800">
-          {t.title}
-        </h1>
-        <div class="mt-2 overflow-x-auto">
-          <div class="mx-auto flex w-max gap-3 px-1 pb-1">
-            {
-              periods.map((entry) => (
-                <a
-                  href={`/?period=${entry.value}`}
-                  class:list={[
-                    "whitespace-nowrap border-b-2 pb-1 text-lg transition-colors",
-                    state.period === entry.value
-                      ? "border-gray-800 font-semibold text-gray-800"
-                      : "border-transparent text-gray-400 hover:border-gray-300 hover:text-gray-600",
-                  ]}
-                >
-                  {entry.label.replace(/\s+\d{4}$/, "")}
-                </a>
-              ))
-            }
-          </div>
-        </div>
-      </div>
+      <header class="text-center">
+        <h1 class="text-3xl font-bold text-ink">{t.title}</h1>
+        <PeriodTabs periods={periods} current={state.period} />
+      </header>
 
-      <div class="mt-6 overflow-x-auto">
-        <table class="w-full table-auto rounded-lg bg-white sm:table-fixed">
-          <thead class="bg-gray-800 text-white">
+      <div class="mt-6 overflow-x-auto rounded-panel bg-panel">
+        <table class="w-full table-auto sm:table-fixed">
+          <thead class="bg-ink text-white">
             <tr>
-              <th class="px-4 py-3 text-left sm:px-6 sm:w-3/5">{t.name}</th>
-              <th class="px-4 py-3 text-left sm:px-6 sm:w-2/5"
-                >{t.ficuzPoints}</th
-              >
+              <th scope="col" class="w-3/5 px-4 py-3 text-left sm:px-6">{t.name}</th>
+              <th scope="col" class="w-2/5 px-4 py-3 text-left sm:px-6">{t.ficuzPoints}</th>
             </tr>
           </thead>
-          <tbody id="leaderboard-body" class="divide-y divide-gray-200">
+          <tbody class="divide-y divide-line">
             {
               state.leaderboard.map((entry, index) => {
-                const medal = ["🥇", "🥈", "🥉"][index] || "";
+                const medal = ["🥇", "🥈", "🥉"][index];
 
                 return (
-                  <tr class="hover:bg-gray-50">
-                    <td
-                      class:list={[
-                        "relative w-3/5 px-4 py-4 font-medium text-gray-900 sm:px-6",
-                        canAdjustPoints && "pr-28 sm:pr-32",
-                      ]}
-                    >
-                      <div class="flex items-center gap-3">
-                        <span class="inline-flex min-w-0 items-center gap-2 leading-tight">
-                          <span class="truncate">{entry.name}</span>
-                          {medal && <span>{medal}</span>}
-                        </span>
-
-                        {canAdjustPoints && (
-                          <form
-                            method="post"
-                            action="/api/points"
-                            class="absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2 sm:right-6"
-                            aria-label={t.adjustPoints}
-                          >
-                            <input
-                              type="hidden"
-                              name="next"
-                              value={currentPath}
-                            />
-                            <input
-                              type="hidden"
-                              name="playerId"
-                              value={entry.playerId}
-                            />
-                            <button
-                              type="submit"
-                              name="delta"
-                              value="-1"
-                              class="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700 transition hover:border-emerald-500 hover:bg-emerald-100"
-                              aria-label={t.decreasePoints}
-                              title={t.decreasePoints}
-                            >
-                              -
-                            </button>
-                            <button
-                              type="submit"
-                              name="delta"
-                              value="1"
-                              class="rounded-full border border-red-300 bg-red-50 px-3 py-1 text-sm font-semibold text-red-700 transition hover:border-red-500 hover:bg-red-100"
-                              aria-label={t.increasePoints}
-                              title={t.increasePoints}
-                            >
-                              +
-                            </button>
-                          </form>
-                        )}
+                  <tr class="hover:bg-panel-muted">
+                    <td class="w-3/5 px-4 py-4 font-medium text-action sm:px-6">
+                      <div class="flex min-w-0 items-center gap-2 leading-tight">
+                        <span class="truncate">{entry.name}</span>
+                        {medal && <span aria-hidden="true">{medal}</span>}
                       </div>
                     </td>
-                    <td class="w-2/5 px-4 py-4 text-gray-700 tabular-nums sm:px-6">
-                      <span class="inline-flex items-center gap-1 whitespace-nowrap">
-                        <span>
-                          {formatPoints(entry.cumulative)} {t.unit}
-                        </span>
-                        {entry.delta !== 0 && (
-                          <span
-                            class={
-                              entry.delta > 0
-                                ? "text-red-600"
-                                : "text-emerald-600"
-                            }
-                          >
-                            {formatMonthlyDelta(entry.delta)}
+                    <td class="relative w-2/5 px-4 py-4 text-body tabular-nums sm:px-6">
+                      <div class="relative inline-flex items-center gap-1 whitespace-nowrap">
+                        <span>{points.format(entry.total)} {t.unit}</span>
+                        {entry.periodPoints !== 0 && (
+                          <span class={entry.periodPoints > 0 ? "text-penalty" : "text-relief"}>
+                            ({formatChange(entry.periodPoints)})
                           </span>
                         )}
-                      </span>
+                      </div>
+
+                      {canEdit && (
+                        <form
+                          method="post"
+                          action="/api/points"
+                          class="absolute right-1 top-1/2 flex -translate-y-1/2 items-center sm:right-6"
+                          aria-label={`${t.adjustPoints}: ${entry.name}`}
+                        >
+                          <input type="hidden" name="next" value={currentPath} />
+                          <input type="hidden" name="playerId" value={entry.playerId} />
+                          {POINT_CHANGES.map((change) => (
+                            <button
+                              type="submit"
+                              name="points"
+                              value={change}
+                              class:list={[
+                                "flex size-9 items-center justify-center rounded-full bg-transparent text-3xl font-light leading-none transition-colors sm:size-10",
+                                change < 0
+                                  ? "text-relief hover:text-relief-bright"
+                                  : "text-penalty hover:text-penalty-bright",
+                              ]}
+                              aria-label={`${t.pointChangeLabels[change]}: ${entry.name}`}
+                              title={t.pointChangeLabels[change]}
+                            >
+                              {change < 0 ? "−" : "+"}
+                            </button>
+                          ))}
+                        </form>
+                      )}
                     </td>
                   </tr>
                 );
               })
             }
+            {
+              state.leaderboard.length === 0 && (
+                <tr>
+                  <td colspan="2" class="px-4 py-8 text-center text-muted sm:px-6">
+                    {t.noPlayers}
+                  </td>
+                </tr>
+              )
+            }
           </tbody>
         </table>
       </div>
 
-      <div class="mt-8 rounded-lg bg-white p-6">
-        <h2 class="mb-4 text-xl font-bold text-gray-800">{t.rules}</h2>
-        <div class="space-y-3">
-          <div class="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
-            <span
-              class="flex h-8 w-16 shrink-0 items-center justify-center rounded bg-red-400 text-sm font-bold text-white"
-            >
-              +0.5 PF
-            </span>
-            <p class="text-gray-700">{t.rule4Desc}</p>
-          </div>
-          <div class="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
-            <span
-              class="flex h-8 w-16 shrink-0 items-center justify-center rounded bg-red-500 text-sm font-bold text-white"
-            >
-              +1 PF
-            </span>
-            <p class="text-gray-700">{t.rule5Desc}</p>
-          </div>
-          <div class="flex flex-col gap-2 rounded-lg bg-gray-50 p-3">
-            <div class="flex items-center gap-3">
-              <span
-                class="flex h-8 w-16 shrink-0 items-center justify-center rounded bg-red-500 text-sm font-bold text-white"
-              >
-                +1 PF
-              </span>
-              <p class="text-gray-700">{t.rule1Desc}</p>
-            </div>
-            <div class="ml-19 flex pl-1 text-sm text-gray-500">
-              <span class="mr-1 shrink-0">*</span>
-              <span>{t.rule1Note}</span>
-            </div>
-          </div>
-          <div class="flex flex-col gap-2 rounded-lg bg-gray-50 p-3">
-            <div class="flex items-center gap-3">
-              <span
-                class="flex h-8 w-16 shrink-0 items-center justify-center rounded bg-red-500 text-sm font-bold text-white"
-              >
-                +1 PF
-              </span>
-              <p class="text-gray-700">{t.rule2Desc}</p>
-            </div>
-            <div class="ml-19 flex pl-1 text-sm text-gray-500">
-              <span class="mr-1 shrink-0">*</span>
-              <span>{t.rule2Note1}</span>
-            </div>
-            <div class="ml-19 flex pl-1 text-sm text-gray-500">
-              <span class="mr-1 shrink-0">*</span>
-              <span>{t.rule2Note2}</span>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
-            <span
-              class="flex h-8 w-16 shrink-0 items-center justify-center rounded bg-red-700 text-sm font-bold text-white"
-            >
-              +2 PF
-            </span>
-            <p class="text-gray-700">{t.rule3Desc}</p>
-          </div>
-        </div>
-      </div>
+      <Rules />
 
       <div class="mt-6 text-center">
         {
           isAdmin ? (
             <form method="post" action="/admin/logout">
               <input type="hidden" name="next" value={currentPath} />
-              <button
-                type="submit"
-                class="text-sm font-medium text-gray-600 transition hover:text-gray-900"
-              >
+              <button type="submit" class="text-sm font-medium text-muted transition hover:text-ink">
                 {t.adminLogout}
               </button>
             </form>
           ) : (
-            <a
-              href={adminHref}
-              class="text-sm font-medium text-gray-600 transition hover:text-gray-900"
-            >
+            <a href={adminHref} class="text-sm font-medium text-muted transition hover:text-ink">
               {t.admin}
             </a>
           )
         }
       </div>
     </div>
-  </div>
+  </main>
 
-  {
-    showAdminModal && !isAdmin && (
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-        <a href={currentPath} class="absolute inset-0" aria-label={t.close} />
-        <div class="relative w-full max-w-xs rounded-2xl bg-white p-5 sm:max-w-sm">
-          <a
-            href={currentPath}
-            class="absolute right-5 top-5 text-2xl leading-none text-gray-400 transition hover:text-gray-900"
-          >
-            ×
-          </a>
-
-          <div class="flex justify-center">
-            <h2 class="text-center text-lg font-bold text-gray-900 sm:text-xl">
-              {t.adminPasswordTitle}
-            </h2>
-          </div>
-
-          {showInvalidPassword && (
-            <p class="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-              {t.adminPasswordInvalid}
-            </p>
-          )}
-
-          <form method="post" action="/admin/login" class="mt-3 space-y-4">
-            <input type="hidden" name="next" value={currentPath} />
-            <div class="flex items-stretch gap-3">
-              <input
-                id="admin-password"
-                name="password"
-                type="password"
-                required
-                class="min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 text-gray-900 shadow-sm outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
-                placeholder={t.adminPasswordPlaceholder}
-              />
-              <button
-                type="submit"
-                class="flex h-13 w-13 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-2xl leading-none text-white transition hover:bg-gray-700"
-                aria-label={t.adminPasswordSubmit}
-                title={t.adminPasswordSubmit}
-              >
-                →
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    )
-  }
+  {showDialog && <AdminDialog closePath={currentPath} showError={showError} />}
 </Layout>

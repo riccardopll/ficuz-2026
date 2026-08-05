@@ -3,7 +3,6 @@ import type { APIRoute } from "astro";
 import {
   ADMIN_COOKIE_NAME,
   createAdminSessionValue,
-  getAdminAuth,
   getAdminCookieOptions,
   getSafeRedirectPath,
   passwordsMatch,
@@ -11,20 +10,21 @@ import {
 } from "../../lib/admin-auth";
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
-  const formData = await request.formData();
-  const submittedPassword = String(formData.get("password") ?? "");
-  const next = getSafeRedirectPath(String(formData.get("next") ?? "/"));
-  const invalidRedirectUrl = new URL(next, request.url);
-  invalidRedirectUrl.searchParams.set("admin", "1");
-  invalidRedirectUrl.searchParams.set("error", "invalid");
-  const { password, cookieSecret } = getAdminAuth(locals.runtime.env);
+  const form = await request.formData();
+  const enteredPassword = String(form.get("password") ?? "");
+  const next = getSafeRedirectPath(String(form.get("next") ?? "/"));
+  const back = new URL(next, request.url);
+  const invalidUrl = new URL(back);
+  invalidUrl.searchParams.set("admin", "1");
+  invalidUrl.searchParams.set("error", "invalid");
+  const { ADMIN_PASSWORD: password, ADMIN_COOKIE_SECRET: cookieSecret } = locals.runtime.env;
 
   if (!password || !cookieSecret) {
     return Response.json({ error: "Admin auth is not configured" }, { status: 500 });
   }
 
-  if (!passwordsMatch(submittedPassword, password)) {
-    return redirect(invalidRedirectUrl);
+  if (!passwordsMatch(enteredPassword, password)) {
+    return redirect(invalidUrl);
   }
 
   cookies.set(
@@ -33,5 +33,5 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     getAdminCookieOptions(request),
   );
 
-  return redirect(new URL(next, request.url));
+  return redirect(back);
 };

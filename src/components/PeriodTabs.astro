@@ -1,0 +1,59 @@
+---
+import { translations as t } from "../i18n/translations";
+
+interface Period {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  periods: Period[];
+  current: string;
+}
+
+const { periods, current } = Astro.props;
+const showYears = new Set(periods.map(({ value }) => value.slice(0, 4))).size > 1;
+---
+
+<nav class="mt-2 overflow-x-auto" aria-label={t.periods} data-period-tabs>
+  <div class="mx-auto flex w-max gap-3 px-1 pb-1">
+    {
+      periods.map((period) => {
+        const isCurrent = current === period.value;
+        const label = showYears ? period.label : period.label.replace(/\s+\d{4}$/, "");
+
+        return (
+          <a
+            href={`/?period=${period.value}`}
+            aria-current={isCurrent ? "page" : undefined}
+            aria-label={period.label}
+            class:list={[
+              "whitespace-nowrap border-b-2 pb-1 text-lg transition-colors",
+              isCurrent
+                ? "border-ink font-semibold text-ink"
+                : "border-transparent text-muted hover:border-muted hover:text-ink",
+            ]}
+          >
+            {label}
+          </a>
+        );
+      })
+    }
+  </div>
+</nav>
+
+<script>
+  for (const tabs of document.querySelectorAll("[data-period-tabs]")) {
+    const current = tabs.querySelector('[aria-current="page"]');
+    if (!current) continue;
+
+    const tabsBox = tabs.getBoundingClientRect();
+    const currentBox = current.getBoundingClientRect();
+
+    if (currentBox.left < tabsBox.left) {
+      tabs.scrollLeft -= Math.ceil(tabsBox.left - currentBox.left);
+    } else if (currentBox.right > tabsBox.right) {
+      tabs.scrollLeft += Math.ceil(currentBox.right - tabsBox.right);
+    }
+  }
+</script>

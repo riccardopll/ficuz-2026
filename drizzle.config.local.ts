@@ -1,14 +1,19 @@
 import { defineConfig } from "drizzle-kit";
-import { readdirSync } from "fs";
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
 
-const d1Dir = ".wrangler/state/v3/d1/miniflare-D1DatabaseObject";
-const files = readdirSync(d1Dir).filter((f) => f.endsWith(".sqlite"));
+const D1_DIR = ".wrangler/state/v3/d1/miniflare-D1DatabaseObject";
+const [database] = readdirSync(D1_DIR).filter((file) => file.endsWith(".sqlite"));
+
+if (!database) {
+  throw new Error("Run the local database migrations first");
+}
 
 export default defineConfig({
   out: "./drizzle",
   schema: "./src/db/schema.ts",
   dialect: "sqlite",
   dbCredentials: {
-    url: `${d1Dir}/${files[0]}`,
+    url: join(D1_DIR, database),
   },
 });

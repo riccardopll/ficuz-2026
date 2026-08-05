@@ -9,7 +9,8 @@
     "db:studio:local": "drizzle-kit studio --config drizzle.config.local.ts",
     "deploy": "npx astro build && npx wrangler deploy",
     "dev": "npx astro dev",
-    "fix": "oxfmt && oxlint --fix && astro check"
+    "fix": "oxfmt && oxlint --fix && astro check",
+    "test": "node --import tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.12",
