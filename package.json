@@ -9,8 +9,7 @@
     "db:studio:local": "drizzle-kit studio --config drizzle.config.local.ts",
     "deploy": "npx astro build && npx wrangler deploy",
     "dev": "npx astro dev",
-    "lint": "npx prettier . --write && npx sort-package-json",
-    "typecheck": "npx astro check"
+    "fix": "oxfmt && oxlint --fix && astro check"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.12",
@@ -25,7 +24,8 @@
     "@astrojs/check": "^0.9.6",
     "@types/node": "^22.15.1",
     "drizzle-kit": "^0.31.8",
-    "prettier": "3.8.0",
+    "oxfmt": "^0.62.0",
+    "oxlint": "^1.77.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^6.4.1",

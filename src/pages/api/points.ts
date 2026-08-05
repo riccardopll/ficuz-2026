@@ -3,11 +3,7 @@ import { eq } from "drizzle-orm";
 
 import { createDb } from "../../db";
 import { players, pointTransactions } from "../../db/schema";
-import {
-  getSafeRedirectPath,
-  hasValidAdminSession,
-  redirect,
-} from "../../lib/admin-auth";
+import { getSafeRedirectPath, hasValidAdminSession, redirect } from "../../lib/admin-auth";
 
 export const POST: APIRoute = async ({ request, locals, cookies }) => {
   const formData = await request.formData();

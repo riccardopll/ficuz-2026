@@ -42,9 +42,7 @@ export function redirect(location: string | URL) {
   });
 }
 
-export function getAdminAuth(
-  env: Partial<Pick<Env, "ADMIN_PASSWORD" | "ADMIN_COOKIE_SECRET">>,
-) {
+export function getAdminAuth(env: Partial<Pick<Env, "ADMIN_PASSWORD" | "ADMIN_COOKIE_SECRET">>) {
   return {
     password: env.ADMIN_PASSWORD,
     cookieSecret: env.ADMIN_COOKIE_SECRET,
@@ -81,10 +79,7 @@ export function verifyAdminSessionValue(
   }
 
   const issuedAt = Number(issuedAtRaw);
-  if (
-    !Number.isFinite(issuedAt) ||
-    now - issuedAt > ADMIN_COOKIE_MAX_AGE * 1000
-  ) {
+  if (!Number.isFinite(issuedAt) || now - issuedAt > ADMIN_COOKIE_MAX_AGE * 1000) {
     return false;
   }
 
@@ -95,10 +90,7 @@ export function hasValidAdminSession(
   cookies: ReadableCookies,
   env: Partial<Pick<Env, "ADMIN_COOKIE_SECRET">>,
 ) {
-  return verifyAdminSessionValue(
-    cookies.get(ADMIN_COOKIE_NAME)?.value,
-    env.ADMIN_COOKIE_SECRET,
-  );
+  return verifyAdminSessionValue(cookies.get(ADMIN_COOKIE_NAME)?.value, env.ADMIN_COOKIE_SECRET);
 }
 
 export function getAdminCookieOptions(request: Request) {
@@ -113,10 +105,7 @@ export function getAdminCookieOptions(request: Request) {
   };
 }
 
-export function passwordsMatch(
-  submitted: string,
-  expected: string | undefined,
-) {
+export function passwordsMatch(submitted: string, expected: string | undefined) {
   if (!expected) {
     return false;
   }

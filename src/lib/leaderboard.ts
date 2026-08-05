@@ -12,10 +12,7 @@ export interface LeaderboardEntry {
 
 const START_YEAR = 2026;
 
-export function resolvePeriod(
-  rawPeriod: string | null | undefined,
-  now = new Date(),
-) {
+export function resolvePeriod(rawPeriod: string | null | undefined, now = new Date()) {
   const fallback = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
   if (!rawPeriod || !/^\d{4}-\d{2}$/.test(rawPeriod)) {
@@ -80,10 +77,7 @@ export async function getLeaderboardState(
     .from(players)
     .leftJoin(
       pointTransactions,
-      and(
-        eq(pointTransactions.playerId, players.id),
-        lt(pointTransactions.createdAt, endOfMonth),
-      ),
+      and(eq(pointTransactions.playerId, players.id), lt(pointTransactions.createdAt, endOfMonth)),
     )
     .groupBy(players.id)
     .orderBy(desc(cumulativePoints), desc(monthlyDelta), players.name);

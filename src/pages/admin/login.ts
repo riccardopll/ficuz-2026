@@ -20,10 +20,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const { password, cookieSecret } = getAdminAuth(locals.runtime.env);
 
   if (!password || !cookieSecret) {
-    return Response.json(
-      { error: "Admin auth is not configured" },
-      { status: 500 },
-    );
+    return Response.json({ error: "Admin auth is not configured" }, { status: 500 });
   }
 
   if (!passwordsMatch(submittedPassword, password)) {

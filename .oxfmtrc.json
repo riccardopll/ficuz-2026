@@ -1,0 +1,3 @@
+{
+  "ignorePatterns": ["build", "coverage", "worker-configuration.d.ts", "drizzle"]
+}
