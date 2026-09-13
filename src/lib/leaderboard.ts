@@ -4,6 +4,12 @@ import type { createDb } from "../db";
 import { players, pointTransactions } from "../db/schema";
 
 const START_YEAR = 2026;
+const FINAL_PERIOD = "2026-08";
+
+function getLatestPeriod(now: Date) {
+  const current = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  return current > FINAL_PERIOD ? FINAL_PERIOD : current;
+}
 
 export async function getLeaderboardState(
   db: ReturnType<typeof createDb>,
@@ -44,8 +50,8 @@ export async function getLeaderboardState(
 
 export function getPeriods(monthNames: string[], now = new Date()) {
   const periods: { value: string; label: string }[] = [];
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
+  const [currentYear, latestMonth] = getLatestPeriod(now).split("-").map(Number);
+  const currentMonth = latestMonth - 1;
 
   for (let year = START_YEAR; year <= currentYear; year++) {
     const lastMonth = year === currentYear ? currentMonth : 11;
@@ -62,21 +68,14 @@ export function getPeriods(monthNames: string[], now = new Date()) {
 }
 
 export function resolvePeriod(requestedPeriod: string | null | undefined, now = new Date()) {
-  const fallback = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const fallback = getLatestPeriod(now);
 
   if (!requestedPeriod || !/^\d{4}-\d{2}$/.test(requestedPeriod)) {
     return fallback;
   }
 
   const [year, month] = requestedPeriod.split("-").map(Number);
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
-  const isOutOfRange =
-    year < START_YEAR ||
-    year > currentYear ||
-    month < 1 ||
-    month > 12 ||
-    (year === currentYear && month > currentMonth);
+  const isOutOfRange = year < START_YEAR || month < 1 || month > 12 || requestedPeriod > fallback;
 
   return isOutOfRange ? fallback : requestedPeriod;
 }
