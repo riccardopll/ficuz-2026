@@ -5,6 +5,7 @@
   "scripts": {
     "db:migrate": "drizzle-kit generate && wrangler d1 migrations apply ficuz-2026-db --remote",
     "db:migrate:local": "drizzle-kit generate && wrangler d1 migrations apply ficuz-2026-db",
+    "db:seed:local": "tsx scripts/seed-local.ts",
     "db:snapshot:sql": "tsx scripts/season-snapshot-sql.ts",
     "db:studio": "drizzle-kit studio",
     "db:studio:local": "drizzle-kit studio --config drizzle.config.local.ts",
