@@ -14,12 +14,6 @@ export const translations = {
   periods: "Periodo della classifica",
   seasons: "Stagioni della classifica",
   season: "Stagione",
-  seasonStatus: {
-    upcoming: "In arrivo",
-    active: "In corso",
-    archived: "Archiviata",
-  },
-  seasonArchivedNotice: "Classifica finale, in sola lettura",
   adjustPoints: "Modifica punti",
   noPlayers: "Nessun giocatore",
   pointChangeLabels: {

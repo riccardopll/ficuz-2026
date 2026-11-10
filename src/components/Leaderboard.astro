@@ -31,6 +31,7 @@ const periods = getPeriods(season, t.months, now).map((period) => ({
 const seasons = getStartedSeasons(now).map((item) => ({
   id: item.id,
   name: getSeasonName(item),
+  shortName: `${t.season.charAt(0)}${item.id}`,
   label: getSeasonLabel(item),
   href: getSeasonHref(item, undefined, now),
 }));
@@ -64,26 +65,11 @@ function getSeasonLabel(item: Season) {
 <Layout title={isArchived ? `${t.title} · ${getSeasonName(season)}` : t.title}>
   <main class="container mx-auto px-4 py-8">
     <div class="mx-auto max-w-2xl">
-      <header class="text-center">
-        <h1 class="text-3xl font-bold text-ink">{t.title}</h1>
-        {seasons.length > 1 && <SeasonTabs seasons={seasons} current={season.id} />}
-        <p class="mt-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-          <span class="font-medium text-body">{getSeasonLabel(season)}</span>
-          <span
-            class:list={[
-              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold",
-              isArchived ? "bg-line text-muted" : "bg-relief-soft text-relief",
-            ]}
-          >
-            {
-              state.status === "active" && (
-                <span class="size-1.5 rounded-full bg-relief-bright" aria-hidden="true" />
-              )
-            }
-            {t.seasonStatus[state.status]}
-          </span>
-        </p>
-        {isArchived && <p class="mt-1 text-sm text-subtle">{t.seasonArchivedNotice}</p>}
+      <header>
+        <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-3">
+          <h1 class="text-2xl font-bold text-ink sm:text-3xl">{t.title}</h1>
+          {seasons.length > 1 && <SeasonTabs seasons={seasons} current={season.id} />}
+        </div>
         <PeriodTabs periods={periods} current={state.period} />
       </header>
 
