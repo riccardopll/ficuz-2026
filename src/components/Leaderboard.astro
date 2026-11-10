@@ -66,8 +66,8 @@ function getSeasonLabel(item: Season) {
   <main class="container mx-auto px-4 py-8">
     <div class="mx-auto max-w-2xl">
       <header>
-        <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-3">
-          <h1 class="text-2xl font-bold text-ink sm:text-3xl">{t.title}</h1>
+        <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:gap-x-4">
+          <h1 class="text-center text-2xl font-bold text-ink sm:text-3xl">{t.title}</h1>
           {seasons.length > 1 && <SeasonTabs seasons={seasons} current={season.id} />}
         </div>
         <PeriodTabs periods={periods} current={state.period} />

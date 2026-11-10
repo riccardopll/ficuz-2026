@@ -17,7 +17,7 @@ const showYears = new Set(periods.map(({ value }) => value.slice(0, 4))).size > 
 ---
 
 <nav class="-mx-1 mt-4 overflow-x-auto" aria-label={t.periods} data-period-tabs>
-  <div class="flex w-max gap-3 px-1 pb-1">
+  <div class="mx-auto flex w-max gap-3 px-1 pb-1">
     {
       periods.map((period) => {
         const isCurrent = current === period.value;
