@@ -5,6 +5,7 @@
   "scripts": {
     "db:migrate": "drizzle-kit generate && wrangler d1 migrations apply ficuz-2026-db --remote",
     "db:migrate:local": "drizzle-kit generate && wrangler d1 migrations apply ficuz-2026-db",
+    "db:snapshot:sql": "tsx scripts/season-snapshot-sql.ts",
     "db:studio": "drizzle-kit studio",
     "db:studio:local": "drizzle-kit studio --config drizzle.config.local.ts",
     "deploy": "npx astro build && npx wrangler deploy",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^22.15.1",
     "drizzle-kit": "^0.31.8",
     "oxfmt": "^0.62.0",

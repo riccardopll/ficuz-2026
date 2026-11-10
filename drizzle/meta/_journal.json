@@ -43,6 +43,20 @@
       "when": 1769612876657,
       "tag": "0005_pink_madame_masque",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1794272048858,
+      "tag": "0006_season_standings",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1794272049496,
+      "tag": "0007_snapshot_season_1",
+      "breakpoints": true
     }
   ]
 }
