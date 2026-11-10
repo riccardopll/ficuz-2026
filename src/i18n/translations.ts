@@ -12,6 +12,8 @@ export const translations = {
   adminLogout: "Esci",
   close: "Chiudi",
   periods: "Periodo della classifica",
+  seasons: "Stagioni della classifica",
+  season: "Stagione",
   adjustPoints: "Modifica punti",
   noPlayers: "Nessun giocatore",
   pointChangeLabels: {

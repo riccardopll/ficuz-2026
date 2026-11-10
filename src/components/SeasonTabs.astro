@@ -1,0 +1,46 @@
+---
+import { translations as t } from "../i18n/translations";
+
+interface SeasonLink {
+  id: number;
+  name: string;
+  shortName: string;
+  label: string;
+  href: string;
+}
+
+interface Props {
+  seasons: SeasonLink[];
+  current: number;
+}
+
+const { seasons, current } = Astro.props;
+---
+
+<nav aria-label={t.seasons}>
+  <ul class="flex rounded-panel bg-panel p-0.5">
+    {
+      seasons.map((season) => {
+        const isCurrent = current === season.id;
+
+        return (
+          <li>
+            <a
+              href={season.href}
+              aria-current={isCurrent ? "page" : undefined}
+              aria-label={season.label}
+              title={season.label}
+              class:list={[
+                "block whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-semibold transition-colors sm:px-3 sm:py-1",
+                isCurrent ? "bg-ink text-white" : "text-muted hover:text-ink",
+              ]}
+            >
+              <span class="sm:hidden">{season.shortName}</span>
+              <span class="hidden sm:inline">{season.name}</span>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
